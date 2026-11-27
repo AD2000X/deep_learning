@@ -1,149 +1,24 @@
-# IMDB Sentiment Binary Classification: Sequential Model
+# IMDB Sentiment Classification with a Small Dense Network
 
-This project demonstrates techniques for building, training, and optimizing a neural network model to classify IMDB movie reviews as positive or negative.
+How well can a model classify a movie review if it knows which words appear, but not their order? This notebook starts with a four-unit neural network and explores how model size, learning rate, and regularisation affect training and overfitting.
 
-## Table of Contents
-1. [Data Processing Techniques](#data-processing-techniques)
-2. [Deep Learning Architecture](#deep-learning-architecture)
-3. [Model Optimization Techniques](#model-optimization-techniques)
-4. [Regularization Techniques](#regularization-techniques)
-5. [Performance Evaluation and Hyperparameter Tuning](#performance-evaluation-and-hyperparameter-tuning)
-6. [Model Improvement Strategies](#model-improvement-strategies)
-7. [Engineering Practices and Resource Management](#engineering-practices-and-resource-management)
+[Open the notebook to see the experiments, learning curves, and saved results.](./imdb_binary_classification_sequential_model.ipynb)
 
----
+## Data and model
 
-## 1. Data Processing Techniques
+The study uses 15,000 IMDB reviews for training, 10,000 for validation, and 25,000 for testing. Each review is converted into a 10,000-dimensional multi-hot vector: a feature is 1 if its word appears in the review and 0 otherwise. Repeating a word or moving it to a different position does not change the vector.
 
-### Dataset Loading and Splitting
-- Used TensorFlow to load the IMDB dataset and split it into:
-  - Training set: 15,000 samples
-  - Validation set: 10,000 samples
-  - Test set: 25,000 samples
-- Filtered vocabulary based on word frequency, keeping only the top 10,000 most frequent words.
+The starting model has one hidden layer with four ReLU units and a sigmoid output for positive or negative sentiment. It is built with the Keras `Sequential` API. Here, *Sequential* describes how the network layers are stacked; it does not mean the model reads the review word by word.
 
-### Text Preprocessing
-- Applied **multi-hot encoding** to convert text reviews into 10,000-dimensional binary feature vectors.
+## Experiments and results
 
-### Batch Processing
-- Set an appropriate `batch_size` (e.g., 256) to balance memory usage and training efficiency.
+The notebook compares wider and deeper networks, different learning rates, L1 and L2 penalties, Dropout, and early stopping. It also tests RMSprop against Adam and binary cross-entropy against mean squared error.
 
----
+One useful example is the network with two four-unit hidden layers, using ReLU followed by tanh. Its **peak validation accuracy was 89.28%**, while the model evaluated at the end of that run reached **86.32% test accuracy**. These numbers come from different datasets and refer to different points in training. The learning curve helps explain what a single peak score leaves out.
 
-## 2. Deep Learning Architecture
+The final search fixed the batch size at 256 and the learning rate at 0.0005. Of the two L2 penalties tested, 0.0001 gave the higher test accuracy (**88.31%**). Because the test set was used to choose between the settings, this score is exploratory rather than an independent estimate of final performance.
 
-### Model Construction
-- Built a multilayer fully connected neural network using TensorFlow/Keras's `Sequential` API.
-- Defined:
-  - Input layer: 10,000 dimensions
-  - Hidden layer: 4 neurons
-  - Output layer: 1 neuron
+## Where this fits in the project
 
-### Activation Functions
-- Used `ReLU` for non-linearity.
-- Tested `tanh` to observe its impact on performance.
-- Used `sigmoid` in the output layer for binary classification.
-
-### Loss Functions
-- Tested:
-  - **Binary cross-entropy** (`binary_crossentropy`)
-  - **Mean squared error** (`mean_squared_error`)
-- Analyzed the impact of these functions on learning outcomes.
-
----
-
-## 3. Model Optimization Techniques
-
-### Optimizer Selection
-- Used:
-  - **RMSProp**: Suitable for sparse data, adaptive learning rate.
-  - **Adam**: Combines RMSProp and momentum advantages.
-
-### Learning Rate Adjustment
-- Experimented with learning rates:
-  - `0.001`, `0.0005`, `0.0001`
-- Identified optimal values for faster convergence.
-
-### Momentum Adjustment
-- Tested momentum parameters:
-  - `0.9` and `0.5`
-- Accelerated gradient descent using momentum.
-
----
-
-## 4. Regularization Techniques
-
-### L1 Regularization (Lasso)
-- Penalized the absolute value of weights to control model complexity and prevent overfitting.
-- Tested penalty strengths: `0.001` to `0.00001`.
-
-### L2 Regularization (Ridge)
-- Penalized the square of weights to suppress large weights and control complexity.
-- Tested penalty strengths: `0.001` to `0.00001`.
-
-### L1+L2 Regularization (Elastic Net)
-- Combined L1 and L2 to balance feature selection and model generalization.
-
-### Dropout
-- Randomly “turned off” neurons during training to prevent reliance on specific features.
-- Tested dropout rates: `0.01` to `0.5`.
-
-### Early Stopping
-- Dynamically stopped training based on validation performance (e.g., accuracy or loss) to prevent overfitting.
-
----
-
-## 5. Performance Evaluation and Hyperparameter Tuning
-
-### Grid Search
-- Tested multiple hyperparameter combinations:
-  - Learning rate
-  - Regularization strength
-  - Batch size
-- Identified the best configuration.
-
-### Performance Monitoring and Logging
-- Monitored model performance using:
-  - Accuracy
-  - Loss metrics
-- Logged training results in Pandas DataFrames for comparison and analysis.
-
-### Visualization
-- Used Matplotlib to plot learning curves, comparing training and validation:
-  - Loss
-  - Accuracy
-
----
-
-## 6. Model Improvement Strategies
-
-### Network Structure Adjustment
-- Tested adding more hidden layers and increasing the number of neurons to improve model performance.
-- Example: Increased to 4 hidden layers and included `tanh` activation functions.
-
-### Automated Hyperparameter Tuning
-- Introduced grid search to reduce manual tuning and increase experiment efficiency.
-
-### Performance-Based Hyperparameter Refinement
-- Adjusted hyperparameter configurations based on:
-  - Learning curves
-  - Validation performance (e.g., validation loss and accuracy).
-
----
-
-## 7. Engineering Practices and Resource Management
-
-### Memory Management
-- Cleared memory using:
-  - TensorFlow's `clear_session()`
-  - Python's garbage collection (`gc`)
-- Optimized resource usage.
-
-### Modular Design
-- Encapsulated functionalities into independent functions:
-  - Training
-  - Performance evaluation
-  - Grid search
-
-### Dynamic Training Control
-- Used callback functions (e.g., `EarlyStopping`) to adaptively adjust training processes.
+- [Text representations, Transformer, and BiLSTM](../imdb_binary_classification_transformer_bilstm/) asks what changes when the model can use word pairs or word order.
+- [Validation-based tuning with PyTorch](../imdb_movie_review_sentiment_classification_pytorch/) returns to the small dense network, selects settings using validation data, and checks the finalists across three random seeds before final testing.
