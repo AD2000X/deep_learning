@@ -1,134 +1,19 @@
-# Task: IMDB Movie Review Binary Classification Task
+# IMDB Movie Review Sentiment Classification
 
-## Third study: How much does tuning help?
+This repository contains three studies on the same task: predicting whether an IMDB movie review is positive or negative. The first builds a simple baseline, the second explores what changes when word order is available, and the third asks how much careful tuning can improve the baseline.
 
-The [PyTorch study](./imdb_movie_review_sentiment_classification_pytorch/) returns to the first project's approach: a small neural network that uses word presence, not word order, to classify reviews. It selects settings on validation data and checks the two finalists across three random seeds.
+## The three studies
 
-On 25,000 test reviews, the tuned model reached **89.08% accuracy**, compared with **88.55%** for the baseline in the same study. It correctly classified 134 more reviews overall: it missed fewer positive reviews, but also classified more negative reviews as positive.
+| Study | Main question | What to look for |
+|---|---|---|
+| [1. A small dense network in Keras](./imdb_binary_classification_sequential/) | How well can a model classify reviews using only the words that appear? | Training and validation curves show how network size, learning rate, and regularisation affect overfitting. |
+| [2. Word pairs, BiLSTM, and Transformer](./imdb_binary_classification_transformer_bilstm/) | Does the model need the whole sequence, or are short phrases enough? | The binary unigram + bigram classifier reached **89.64% test accuracy**, compared with **88.39%** for the Transformer with positional embeddings in this study. |
+| [3. Validation-based tuning in PyTorch](./imdb_movie_review_sentiment_classification_pytorch/) | How much does tuning improve a small network, and how stable is the choice across seeds? | The two finalists were checked across three seeds. On the test set, the selected model reached **89.08% accuracy**, compared with **88.55%** for its baseline. |
 
-## Comparison of the first two studies: Sequential, Transformer, and BiLSTM models
+## What the results show
 
-### Table of Contents
-1. [Similarities](#similarities)
-   - [Data Processing Techniques](#data-processing-techniques)
-   - [Deep Learning Techniques](#deep-learning-techniques)
-   - [Model Evaluation and Hyperparameter Tuning](#model-evaluation-and-hyperparameter-tuning)
-   - [Engineering Practices](#engineering-practices)
-2. [Differences](#differences)
-   - [Data Processing Techniques](#data-processing-techniques-1)
-   - [Feature Engineering](#feature-engineering)
-   - [Deep Learning Techniques](#deep-learning-techniques-1)
-   - [Regularization Techniques](#regularization-techniques)
-   - [Optimization Methods](#optimization-methods)
-   - [Model Evaluation and Tuning](#model-evaluation-and-tuning)
-   - [Resources and Tools](#resources-and-tools)
-3. [Summary Table](#summary-table)
-4. [Conclusion](#conclusion)
+In the second study, adding adjacent word pairs improved accuracy from **88.66% to 89.64%**. A phrase such as `not good` can be a feature in its own right, even when the model does not read the whole sentence in order.
 
----
+In the third study, tuning changed the kinds of mistakes the model made. On 25,000 test reviews, the selected model missed **223 fewer positive reviews** but made **89 more false positive predictions**. That is **134 more reviews classified correctly** overall.
 
-## 1. Similarities
-
-### Data Processing Techniques
-- **Dataset Splitting**:
-  - Both use the IMDB dataset, splitting it into training, validation, and test sets.
-- **Text Representation**:
-  - Both use multi-hot encoding for representing text as binary feature vectors.
-  - Transformer and BiLSTM extends this by incorporating more advanced vectorization techniques like Bag-of-Words (BoW), TF-IDF, and word embeddings.
-
-### Deep Learning Techniques
-- **Model Architectures**:
-  - Both use dense layers for text classification tasks.
-  - Transformer and BiLSTM expands on this by introducing advanced architectures such as Transformer and Bidirectional LSTM (BiLSTM).
-- **Activation Functions**:
-  - Both tasks use ReLU for hidden layers and sigmoid for binary classification.
-- **Regularization**:
-  - Both apply dropout and early stopping to prevent overfitting.
-- **Optimization Methods**:
-  - Both utilize RMSprop and Adam optimizers with learning rate adjustments.
-
-### Model Evaluation and Hyperparameter Tuning
-- **Grid Search**:
-  - Both employ grid search for hyperparameter tuning (e.g., learning rates, regularization strength, batch size).
-- **Overfitting Detection**:
-  - Both monitor training and validation loss curves to identify overfitting.
-- **Visualization**:
-  - Both use Matplotlib to visualize training and validation performance metrics.
-
-### Engineering Practices
-- **Resource Optimization**:
-  - Both use callback functions (e.g., early stopping) and memory management techniques to optimize GPU resources.
-
----
-
-## 2. Differences
-
-### Data Processing Techniques
-- **Vocabulary Handling**:
-  - Sequential filters vocabulary by word frequency, retaining the top 10,000 words.
-  - Transformer and BiLSTM uses the TextVectorization layer, supporting more advanced formats like N-grams and embedding vectors.
-- **Word Embeddings**:
-  - Sequential does not use pre-trained embeddings.
-  - Transformer and BiLSTM incorporates GloVe pre-trained embeddings for semantic understanding and transfer learning.
-
-### Feature Engineering
-- **sequential**:
-  - Primarily uses multi-hot encoding to create binary feature vectors.
-- **Transformer and BiLSTM**:
-  - Expands feature engineering to include:
-    - Bag-of-Words (BoW) for local context.
-    - TF-IDF to weight term importance.
-    - N-grams for capturing sequential information.
-
-### Deep Learning Techniques
-- **sequential**:
-  - Uses a simple feed-forward neural network with one hidden layer.
-- **Transformer and BiLSTM**:
-  - Implements more sophisticated architectures:
-    - TransformerEncoder for long text sequences and global dependencies.
-    - Bidirectional LSTM for capturing long-term dependencies.
-    - Positional embeddings for retaining sequence information.
-
-### Regularization Techniques
-- **Sequential**:
-  - Applies L1, L2, and Elastic Net regularizations for weight penalties.
-- **Transformer and BiLSTM**:
-  - Uses weight initialization with pre-trained embeddings like GloVe.
-
-### Optimization Methods
-- **Learning Rate Strategies**:
-  - Sequential experiments with static learning rates.
-  - Transformer and BiLSTM incorporates advanced learning rate scheduling and warm-up strategies.
-- **Model Saving**:
-  - Transformer and BiLSTM uses `ModelCheckpoint` for saving the best-performing models, which is absent in sequential.
-
-### Model Evaluation and Tuning
-- **Hyperparameters**:
-  - Sequential focuses on simpler hyperparameters such as learning rate, momentum, and regularization strength.
-  - Transformer and BiLSTM introduces additional parameters like embedding dimensions, attention heads, and LSTM units.
-- **Comparison Experiments**:
-  - Sequential primarily tests variations of the feed-forward neural network.
-  - Transformer and BiLSTM compares multiple architectures (Transformer, BiLSTM, BoW, TF-IDF).
-
-### Resources and Tools
-- **Visualization Tools**:
-  - Sequential uses Matplotlib for basic performance visualization.
-  - Transformer and BiLSTM uses both Matplotlib and Seaborn for advanced data distribution and performance analysis.
-- **Model Training Environment**:
-  - Transformer and BiLSTM explicitly leverages T4 GPUs and addresses resource constraints for larger architectures like Transformers.
-
----
-
-## 3. Summary Table
-
-| **Category**               | **Similarities**                                                    | **Differences**                                                                                   |
-|-----------------------------|--------------------------------------------------------------------|---------------------------------------------------------------------------------------------------|
-| **Data Processing**         | Multi-hot encoding for binary vectors.                           | Transformer and BiLSTM uses TextVectorization with BoW, TF-IDF, and GloVe embeddings.                               |
-| **Feature Engineering**     | Both focus on text vectorization.                                | Sequential uses simple multi-hot encoding, while Transformer and BiLSTM integrates N-grams, BoW, and TF-IDF.              |
-| **Deep Learning Techniques**| Dense layers, ReLU activation, sigmoid for binary classification.| Transformer and BiLSTM adds Transformer, BiLSTM, and positional embeddings.                                         |
-| **Regularization**          | Dropout and early stopping for overfitting prevention.           | Sequential adds L1, L2, and Elastic Net penalties, while Transformer and BiLSTM uses GloVe for weight initialization.      |
-| **Optimization**            | RMSprop and Adam optimizers.                                     | Transformer and BiLSTM incorporates learning rate schedules and `ModelCheckpoint` for saving models.               |
-| **Evaluation and Tuning**   | Grid search and loss visualization.                              | Transformer and BiLSTM introduces additional hyperparameters and compares multiple advanced architectures.          |
-| **Resources and Tools**     | Matplotlib for visualizations.                                   | Transformer and BiLSTM uses Seaborn for enhanced analysis and T4 GPUs for training large-scale models.              |
-
----
+The studies use different training and validation splits and different model-selection procedures. Their scores are useful for comparisons **within each study**, not as a ranking of TensorFlow versus PyTorch.
