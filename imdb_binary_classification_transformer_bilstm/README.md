@@ -1,122 +1,41 @@
-# IMDB Sentiment Binary Classification: Transformer and BiLSTM
-This project demonstrates techniques for building, training, and optimizing a neural network model to classify IMDB movie reviews as positive or negative.
+# IMDB Sentiment Classification: From Bigrams to Transformers
 
-## Table of Contents
-1. [Natural Language Processing (NLP)](#1-natural-language-processing-nlp)
-   - [Data Processing and Vectorization](#data-processing-and-vectorization)
-   - [Feature Engineering](#feature-engineering)
-2. [Deep Learning Techniques](#2-deep-learning-techniques)
-   - [Model Architectures](#model-architectures)
-   - [Regularization](#regularization)
-   - [Optimization Methods](#optimization-methods)
-3. [Model Evaluation and Hyperparameter Tuning](#3-model-evaluation-and-hyperparameter-tuning)
-   - [Hyperparameter Tuning](#hyperparameter-tuning)
-   - [Overfitting Detection](#overfitting-detection)
-   - [Comparison Experiments](#comparison-experiments)
-4. [Combining Traditional and Modern Methods](#4-combining-traditional-and-modern-methods)
-5. [Resources and Tools](#5-resources-and-tools)
-   - [Dataset](#dataset)
-   - [Model Training Environment](#model-training-environment)
-   - [Data Visualization](#data-visualization)
+How much word order does a model need to classify a movie review as positive or negative? This project compares three ways to read the same IMDB reviews: looking for words and short phrases, reading words in sequence with a BiLSTM, and learning relationships between words with a Transformer encoder.
 
----
+The strongest recorded test result came from a simple model: **a dense classifier using word and word-pair features reached 89.64% accuracy**. The Transformer with positional embeddings reached **88.39%**.
 
-## 1. Natural Language Processing (NLP)
+[Open the notebook to see the experiments, learning curves, and saved outputs.](./imdb_binary_classification_transformer_bilstm.ipynb)
 
-### Data Processing and Vectorization
-1. **Text Vectorization (`TextVectorization`)**:
-   - Utilized TensorFlow's `TextVectorization` layer to convert text into various numerical formats:
-     - Bag-of-Words, multi-hot encoding, TF-IDF, and embedding vectors.
-   - Supports the generation of N-grams (e.g., bigrams).
-   - Processes text into formats suitable for deep learning models.
+## Data and approach
 
-2. **Word Embedding**:
-   - Used GloVe pre-trained word embeddings to initialize embedding layers, enabling transfer learning and helping models understand semantic information.
+The project uses the [Stanford Large Movie Review Dataset](https://ai.stanford.edu/~amaas/data/sentiment/). The models were developed on 20,000 training reviews and 5,000 validation reviews. The official test set contains 25,000 reviews. Unlabelled reviews were excluded.
 
-### Feature Engineering
-1. **Bag-of-Words (BoW)**:
-   - Represents text features using bigrams, capturing local contextual relationships between words.
-2. **TF-IDF**:
-   - Measures word importance within a document, combining term frequency and word rarity in the corpus to weight features.
-3. **N-grams**:
-   - Utilizes N-grams (especially bigrams) to capture sequential information in text, enhancing feature representation effectiveness.
+The experiments were implemented in TensorFlow/Keras:
 
----
+| Approach | What information does it use? |
+|---|---|
+| Word and phrase features | The unigram model records which words appear. The bigram model also records adjacent word pairs, so `not good` can be a feature in its own right. A third version weights these features using TF-IDF. |
+| Bidirectional LSTM | Reads the review in both directions to use the words before and after each position. A separate experiment uses frozen, pre-trained GloVe word embeddings. |
+| Transformer encoder | Uses self-attention to connect words across the review. The notebook compares encoders with and without positional embeddings and examines how model size and training settings affect overfitting. |
 
-## 2. Deep Learning Techniques
+## Results
 
-### Model Architectures
-1. **Transformer Architecture**:
-   - Implements a custom `TransformerEncoder` layer, supporting:
-     - Multi-Head Attention for parallel processing of different parts of the text.
-     - Positional embedding (`PositionalEmbedding`) to retain sequence information.
-     - Feed-Forward Neural Networks for feature transformation.
-   - Suitable for processing long text sequences and capturing global dependencies.
+| Model | Test accuracy |
+|---|---:|
+| Transformer without positional embeddings | 87.09% |
+| Transformer with positional embeddings | 88.39% |
+| Binary unigram | 88.66% |
+| **Binary unigram + bigram** | **89.64%** |
+| TF-IDF unigram + bigram | 89.26% |
 
-2. **Bidirectional LSTM (BiLSTM)**:
-   - Processes sequential data from both forward and backward directions to capture long-term dependencies.
-   - Requires fewer computational resources compared to Transformer models, making it suitable for resource-constrained environments.
+The table reports saved **test** results only. The BiLSTM experiments are discussed in the notebook using their training and validation results; those scores are not mixed into the test comparison.
 
-3. **Dense Layers**:
-   - Used for text classification tasks in Bag-of-Words and TF-IDF models.
+## What I learned
 
-4. **Pre-trained Word Embeddings (GloVe)**:
-   - GloVe pre-trained embeddings contain semantic information learned from large-scale corpora, enhancing the model's generalization capabilities.
+Adding adjacent word pairs improved accuracy by **0.98 percentage points** over single words alone. Giving those features TF-IDF weights did not improve on simply recording whether they appeared. For these reviews, short phrases provided useful sentiment information without requiring a sequence model.
 
-### Regularization
-1. **Dropout**:
-   - Randomly drops neurons during training to reduce overfitting.
-2. **Early Stopping**:
-   - Monitors validation loss and stops training early to prevent overfitting.
-3. **Weight Initialization**:
-   - Initialized model weights using pre-trained embeddings such as GloVe.
+Position information also mattered in the Transformer experiments: the encoder with positional embeddings scored **1.30 percentage points higher** than the version without them. However, it still did not outperform the simpler bigram classifier in this run.
 
-### Optimization Methods
-1. **Gradient Optimizers**:
-   - RMSprop and Adam optimizers were used, incorporating momentum and adaptive learning rate features.
-2. **Learning Rate Scheduling**:
-   - Custom learning rates and warm-up strategies were employed to improve convergence speed.
-3. **Model Saving and Callbacks**:
-   - `ModelCheckpoint` was used to save the best-performing model.
+## Limitations
 
----
-
-## 3. Model Evaluation and Hyperparameter Tuning
-
-### Hyperparameter Tuning
-1. Embedding dimensions.
-2. Number of attention heads.
-3. Batch size.
-4. Number of LSTM units.
-5. Transformer layers and dense layer units.
-
-### Overfitting Detection
-1. Monitored training and validation loss, as well as accuracy curves, to detect signs of overfitting.
-2. Tested regularization methods (e.g., Dropout and Early Stopping) and data augmentation strategies.
-
-### Comparison Experiments
-1. Explored various model architectures (Transformer, LSTM, Bag-of-Words, TF-IDF) for IMDB movie review sentiment classification.
-2. Compared test accuracy across different techniques to evaluate model performance.
-
----
-
-## 4. Combining Traditional and Modern Methods
-- **Traditional Methods**:
-  - Bag-of-Words, TF-IDF.
-- **Modern Methods**:
-  - Transformer, LSTM, and pre-trained word embeddings (GloVe).
-
----
-
-## 5. Resources and Tools
-
-### Dataset
-1. The IMDB movie review dataset was the primary data source.
-2. Data preprocessing included removing irrelevant data (e.g., unlabeled reviews).
-
-### Model Training Environment
-1. Training was conducted on T4 GPUs, with a focus on the challenges of resource constraints and time efficiency.
-
-### Data Visualization
-1. Used Matplotlib and Seaborn to visualize data distribution and the training process (e.g., loss and accuracy curves).
-2. Facilitated the analysis of overfitting and model performance.
+Several models were evaluated on the same test set during the project. These results describe the recorded experiments, not a fresh evaluation of a model selected without seeing test scores. They do not establish that bigram models are generally better than Transformers.
