@@ -2,7 +2,7 @@
 
 How much does tuning improve a small neural network for sentiment classification? On 25,000 IMDB test reviews, the selected model reached **89.08% accuracy**, compared with **88.55%** for a four-unit baseline. It classified 134 more reviews correctly, but its precision for positive reviews was slightly lower.
 
-[Open the notebook to see the experiments, learning curves, and confusion matrices.](./IMDB_Movie_Review_Sentiment_Classification.ipynb) The saved outputs are included, so you can read the results without running the notebook.
+[Open the notebook to see the experiments, learning curves, and confusion matrices.](./imdb_movie_review_sentiment_classification_pytorch.ipynb) The saved outputs are included, so you can read the results without running the notebook.
 
 ## Data and method
 
