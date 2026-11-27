@@ -1,6 +1,12 @@
 # Task: IMDB Movie Review Binary Classification Task
 
-## Technique Used in Sequencial and in Transformer and BiLSTM: Similarities and Differences
+## Third study: How much does tuning help?
+
+The [PyTorch study](./imdb_movie_review_sentiment_classification_pytorch/) returns to the first project's approach: a small neural network that uses word presence, not word order, to classify reviews. It selects settings on validation data and checks the two finalists across three random seeds.
+
+On 25,000 test reviews, the tuned model reached **89.08% accuracy**, compared with **88.55%** for the baseline in the same study. It correctly classified 134 more reviews overall: it missed fewer positive reviews, but also classified more negative reviews as positive.
+
+## Comparison of the first two studies: Sequential, Transformer, and BiLSTM models
 
 ### Table of Contents
 1. [Similarities](#similarities)
